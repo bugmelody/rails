@@ -15,6 +15,8 @@ After reading this guide, you will know:
 
 --------------------------------------------------------------------------------
 
+> insulate: vt. 隔离，使孤立；使绝缘，使隔热
+
 If you're used to using raw SQL to find database records, then you will generally find that there are better ways to carry out the same operations in Rails. Active Record insulates you from the need to use SQL in most cases.
 
 Code examples throughout this guide will refer to one or more of the following models:
@@ -51,7 +53,7 @@ Active Record will perform queries on the database for you and is compatible wit
 
 Retrieving Objects from the Database
 ------------------------------------
-
+# 到此
 To retrieve objects from the database, Active Record provides several finder methods. Each finder method allows you to pass arguments into it to perform certain queries on your database without writing raw SQL.
 
 The methods are:
