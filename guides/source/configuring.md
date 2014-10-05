@@ -1,4 +1,6 @@
 Configuring Rails Applications
+
+[[[view-1]]]
 ==============================
 
 This guide covers the configuration and initialization features available to Rails applications.
@@ -73,6 +75,8 @@ application. Accepts a valid week day symbol (e.g. `:monday`).
 
 * `config.colorize_logging` specifies whether or not to use ANSI color codes when logging information. Defaults to true.
 
+finer grained 更细粒度
+
 * `config.consider_all_requests_local` is a flag. If true then any error will cause detailed debugging information to be dumped in the HTTP response, and the `Rails::Info` controller will show the application runtime context in `/rails/info/properties`. True by default in development and test environments, and false in production mode. For finer-grained control, set this to false and implement `local_request?` in controllers to specify which requests should provide debugging information on errors.
 
 * `config.console` allows you to set class that will be used as console you run `rails console`. It's best to run it in `console` block:
@@ -98,6 +102,7 @@ application. Accepts a valid week day symbol (e.g. `:monday`).
 
 * `config.exceptions_app` sets the exceptions application invoked by the ShowException middleware when an exception happens. Defaults to `ActionDispatch::PublicExceptions.new(Rails.public_path)`.
 
+conform to 符合；遵照
 * `config.file_watcher` the class used to detect file updates in the filesystem when `config.reload_classes_only_on_change` is true. Must conform to `ActiveSupport::FileUpdateChecker` API.
 
 * `config.filter_parameters` used for filtering out the parameters that
@@ -157,6 +162,7 @@ pipeline is enabled. It is set to true by default.
 
 * `config.assets.debug` disables the concatenation and compression of assets. Set to `true` by default in `development.rb`.
 
+sprocket   ['sprɔkit] n.1.【机械学】1.链齿2.链轮 2.【木工】挑橼接木 3.【军事】链轮(反扫雷装置)
 * `config.assets.cache_store` defines the cache store that Sprockets will use. The default is the Rails file store.
 
 * `config.assets.version` is an option string that is used in MD5 hash generation. This can be changed to force all files to be recompiled.
@@ -178,6 +184,8 @@ end
 
 The full set of methods that can be used in this block are as follows:
 
+plural   ['pluərəl] adj.1.复杂的2.由复数组成的；包含复数的3.【语法学】复数的n.1.【语法学】2.复数3.(词的)复数形成4.复数形式的单词(或词组)
+pluralized vt. 使成复数；以复数表示
 * `assets` allows to create assets on generating a scaffold. Defaults to `true`.
 * `force_plural` allows pluralized model names. Defaults to `false`.
 * `helper` defines whether or not to generate helpers. Defaults to `true`.
@@ -204,7 +212,10 @@ Every Rails application comes with a standard set of middleware which it uses in
 * `Rails::Rack::Logger` notifies the logs that the request has begun. After request is complete, flushes all the logs.
 * `ActionDispatch::ShowExceptions` rescues any exception returned by the application and renders nice exception pages if the request is local or if `config.consider_all_requests_local` is set to `true`. If `config.action_dispatch.show_exceptions` is set to `false`, exceptions will be raised regardless.
 * `ActionDispatch::RequestId` makes a unique X-Request-Id header available to the response and enables the `ActionDispatch::Request#uuid` method.
+
+spoofing n. 电子欺骗；哄骗 v. 哄骗；戏弄；嘲讽（spoof的ing形式）
 * `ActionDispatch::RemoteIp` checks for IP spoofing attacks and gets valid `client_ip` from request headers. Configurable with the `config.action_dispatch.ip_spoofing_check`, and `config.action_dispatch.trusted_proxies` options.
+intercept vt. 拦截；截断；窃听
 * `Rack::Sendfile` intercepts responses whose body is being served from a file and replaces it with a server specific X-Sendfile header. Configurable with `config.action_dispatch.x_sendfile_header`.
 * `ActionDispatch::Callbacks` runs the prepare callbacks before serving the request.
 * `ActiveRecord::ConnectionAdapters::ConnectionManagement` cleans active connections after each request, unless the `rack.test` key in the request environment is set to `true`.
@@ -248,6 +259,7 @@ config.middleware.delete "Rack::MethodOverride"
 
 ### Configuring i18n
 
+delegate vt. 委派…为代表 n. 代表
 All these configuration options are delegated to the `I18n` library.
 
 * `config.i18n.available_locales` whitelists the available locales for the app. Defaults to all locale keys found in locale files, usually only `:en` on a new application.
@@ -282,6 +294,7 @@ All these configuration options are delegated to the `I18n` library.
 
 * `config.active_record.timestamped_migrations` controls whether migrations are numbered with serial integers or with timestamps. The default is true, to use timestamps, which are preferred if there are multiple developers working on the same application.
 
+optimistic adj. 乐观的；乐观主义的
 * `config.active_record.lock_optimistically` controls whether Active Record will use optimistic locking and is true by default.
 
 * `config.active_record.cache_timestamp_format` controls the format of the timestamp value in the cache key. Default is `:number`.
@@ -853,6 +866,7 @@ Rails.application.config.before_initialize do
 end
 ```
 
+notably adv. 显著地；尤其
 WARNING: Some parts of your application, notably routing, are not yet set up at the point where the `after_initialize` block is called.
 
 ### `Rails::Railtie#initializer`
@@ -935,6 +949,7 @@ Below is a comprehensive list of all the initializers found in Rails in the orde
 
 * `set_autoload_paths` This initializer runs before `bootstrap_hook`. Adds all sub-directories of `app` and paths specified by `config.autoload_paths` to `ActiveSupport::Dependencies.autoload_paths`.
 
+railties ????? 是什么意思 ???
 * `add_routing_paths` Loads (by default) all `config/routes.rb` files (in the application and railties, including engines) and sets up the routes for the application.
 
 * `add_locales` Adds the files in `config/locales` (from the application, railties and engines) to `I18n.load_path`, making available the translations in these files.
@@ -997,6 +1012,7 @@ ActiveRecord::ConnectionTimeoutError - could not obtain a database connection wi
 If you get the above error, you might want to increase the size of connection
 pool by incrementing the `pool` option in `database.yml`
 
+contending for 争夺
 NOTE. If you are running in a multi-threaded environment, there could be a chance that several threads may be accessing multiple connections simultaneously. So depending on your current request load, you could very well have multiple threads contending for a limited amount of connections.
 
 

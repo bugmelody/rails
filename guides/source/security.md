@@ -1,9 +1,12 @@
 Ruby on Rails Security Guide
+[[[run-1]]]
 ============================
 
 This manual describes common security problems in web applications and how to avoid them with Rails.
 
 After reading this guide, you will know:
+
+countermeasure   ['kauntə,meʒə] n. 对策，反措施，对抗(或报复)手段
 
 * All countermeasures _that are highlighted_.
 * The concept of sessions in Rails, what to put in there and popular attack methods.
@@ -19,12 +22,21 @@ Introduction
 
 Web application frameworks are made to help developers build web applications. Some of them also help you with securing the web application. In fact one framework is not more secure than another: If you use it correctly, you will be able to build secure apps with many frameworks. Ruby on Rails has some clever helper methods, for example against SQL injection, so that this is hardly a problem.
 
+so that this is hardly a problem: 因此 SQL injection 对于 rails 来说几乎不算是问题
+
 In general there is no such thing as plug-n-play security. Security depends on the people using the framework, and sometimes on the development method. And it depends on all layers of a web application environment: The back-end storage, the web server and the web application itself (and possibly other layers or applications).
+
+lay person: 外行,俗人
 
 The Gartner Group however estimates that 75% of attacks are at the web application layer, and found out "that out of 300 audited sites, 97% are vulnerable to attack". This is because web applications are relatively easy to attack, as they are simple to understand and manipulate, even by the lay person.
 
+hijacking: n. 劫持（hijack的现在分词）
+fraudulent   ['frɔ:djulənt] adj. 1.欺骗性的，欺诈的，骗人的，不诚实的 2.按诡计行事的，惯于欺诈的 3.骗取的，骗得的
+unsolicited: adj.未经请求的；主动提供的
+countermeasures n. 对策
 The threats against web applications include user account hijacking, bypass of access control, reading or modifying sensitive data, or presenting fraudulent content. Or an attacker might be able to install a Trojan horse program or unsolicited e-mail sending software, aim at financial enrichment or cause brand name damage by modifying company resources. In order to prevent attacks, minimize their impact and remove points of attack, first of all, you have to fully understand the attack methods in order to find the correct countermeasures. That is what this guide aims at.
 
+nasty : adj. 下流的；肮脏的；脾气不好的；险恶的 n. 令人不快的事物
 In order to develop secure web applications you have to keep up to date on all layers and know your enemies. To keep up to date subscribe to security mailing lists, read security blogs and make updating and security checks a habit (check the [Additional Resources](#additional-resources) chapter). It is done manually because that's how you find the nasty logical security problems.
 
 Sessions
@@ -36,6 +48,7 @@ A good place to start looking at security is with sessions, which can be vulnera
 
 NOTE: _HTTP is a stateless protocol. Sessions make it stateful._
 
+shopping basket 购物篮
 Most applications need to keep track of certain state of a particular user. This could be the contents of a shopping basket or the user id of the currently logged in user. Without the idea of sessions, the user would have to identify, and probably authenticate, on every request.
 Rails will create a new session automatically if a new user accesses the application. It will load an existing session if the user has already used the application.
 
@@ -50,6 +63,7 @@ User.find(session[:user_id])
 
 NOTE: _The session id is a 32 byte long MD5 hash value._
 
+feasible adj. 可行的；可能的；可实行的
 A session id consists of the hash value of a random string. The random string is the current time, a random number between 0 and 1, the process id number of the Ruby interpreter (also basically a random number) and a constant string. Currently it is not feasible to brute-force Rails' session ids. To date MD5 is uncompromised, but there have been collisions, so it is theoretically possible to create another input text with the same hash value. But this has had no security impact to date.
 
 ### Session Hijacking
@@ -58,14 +72,17 @@ WARNING: _Stealing a user's session id lets an attacker use the web application 
 
 Many web applications have an authentication system: a user provides a user name and password, the web application checks them and stores the corresponding user id in the session hash. From now on, the session is valid. On every request the application will load the user, identified by the user id in the session, without the need for new authentication. The session id in the cookie identifies the session.
 
+seizes vt. 抓住；夺取；理解；逮捕 vi. 抓住；利用；（机器）卡住
 Hence, the cookie serves as temporary authentication for the web application. Anyone who seizes a cookie from someone else, may use the web application as this user - with possibly severe consequences. Here are some ways to hijack a session, and their countermeasures:
 
+Sniff  吸,闻,网络侦测
 * Sniff the cookie in an insecure network. A wireless LAN can be an example of such a network. In an unencrypted wireless LAN it is especially easy to listen to the traffic of all connected clients. For the web application builder this means to _provide a secure connection over SSL_. In Rails 3.1 and later, this could be accomplished by always forcing SSL connection in your application config file:
 
     ```ruby
     config.force_ssl = true
     ```
 
+prominent adj. 突出的，显著的；杰出的；卓越的
 * Most people don't clear out the cookies after working at a public terminal. So if the last user didn't log out of a web application, you would be able to use it as this user. Provide the user with a _log-out button_ in the web application, and _make it prominent_.
 
 * Many cross-site scripting (XSS) exploits aim at obtaining the user's cookie. You'll read [more about XSS](#cross-site-scripting-xss) later.
@@ -78,6 +95,9 @@ The main objective of most attackers is to make money. The underground prices fo
 
 Here are some general guidelines on sessions.
 
+synchronization   [,siŋkrənai'zeiʃən; ,sin-; -ni'z-] n.1.同时性，时间上的一致 2.同时发生，并发
+fill up 填补；装满；堵塞
+mitigate   ['mitiɡeit]vt.1.使缓和，使温和，使镇静：
 * _Do not store large objects in a session_. Instead you should store them in the database and save their id in the session. This will eliminate synchronization headaches and it won't fill up your session storage space (depending on what session storage you chose, see below).
 This will also be a good idea, if you modify the structure of an object and old versions of it are still in some user's cookies. With server-side session storages you can clear out the sessions, but with client-side storages, this is hard to mitigate.
 
@@ -87,6 +107,7 @@ This will also be a good idea, if you modify the structure of an object and old 
 
 NOTE: _Rails provides several storage mechanisms for the session hashes. The most important is `ActionDispatch::Session::CookieStore`._
 
+controversial adj. 有争议的；有争论的
 Rails 2 introduced a new default session storage, CookieStore. CookieStore saves the session hash directly in a cookie on the client-side. The server retrieves the session hash from the cookie and eliminates the need for a session id. That will greatly increase the speed of the application, but it is a controversial storage option and you have to think about the security implications of it:
 
 * Cookies imply a strict size limit of 4kB. This is fine as you should not store large amounts of data in a session anyway, as described before. _Storing the current user's database id in a session is usually ok_.
@@ -122,6 +143,7 @@ It works like this:
 * The user takes the cookie from the first step (which they previously copied) and replaces the current cookie in the browser.
 * The user has their original credit back.
 
+mongrel   ['mʌŋɡrəl; 'mɔŋ-] n. 杂种；混血儿；杂种动物 adj. 杂种的；混血儿的
 Including a nonce (a random value) in the session solves replay attacks. A nonce is valid only once, and the server has to keep track of all the valid nonces. It gets even more complicated if you have several application servers (mongrels). Storing nonces in a database table would defeat the entire purpose of CookieStore (avoiding accessing the database).
 
 The best _solution against it is not to store this kind of data in a session, but in the database_. In this case store the credit in the database and the logged_in_user_id in the session.
@@ -134,6 +156,21 @@ NOTE: _Apart from stealing a user's session id, the attacker may fix a session i
 
 This attack focuses on fixing a user's session id known to the attacker, and forcing the user's browser into using this id. It is therefore not necessary for the attacker to steal the session id afterwards. Here is how this attack works:
 
+lure   [ljuə]
+n.1.诱惑力；吸引力；魅力
+2.诱惑物
+3.诱回猎鹰的彩色羽毛
+4.(狩猎或钓鱼用的)诱饵；鱼饵；囮子
+vt.1.吸引；引诱；诱惑：
+The price lured many buyers.
+这个价格吸引了许多买家。
+He was lured to destruction.
+他受诱惑而走向毁灭。
+2.以诱饵吸引：
+The animal was lured out of its hole.
+野兽被诱出了洞。
+3.(以诱惑物)诱回(猎鹰)
+
 * The attacker creates a valid session id: They load the login page of the web application where they want to fix the session, and take the session id in the cookie from the response (see number 1 and 2 in the image).
 * They maintain the session by accessing the web application periodically in order to keep an expiring session alive.
 * The attacker forces the user's browser into using this session id (see number 3 in the image). As you may not change a cookie of another domain (because of the same origin policy), the attacker has to run a JavaScript from the domain of the target web application. Injecting the JavaScript code into the application by XSS accomplishes this attack. Here is an example: `<script>document.cookie="_session_id=16d5b78abb28e3d6206b60f22a03c8d9";</script>`. Read more about XSS and injection later on.
@@ -141,6 +178,7 @@ This attack focuses on fixing a user's session id known to the attacker, and for
 * As the new trap session is unused, the web application will require the user to authenticate.
 * From now on, the victim and the attacker will co-use the web application with the same session: The session became valid and the victim didn't notice the attack.
 
+countermeasure   ['kauntə,meʒə] n.对策，反措施，对抗(或报复)手段
 ### Session Fixation - Countermeasures
 
 TIP: _One line of code will protect you from session fixation._
@@ -153,6 +191,7 @@ reset_session
 
 If you use the popular RestfulAuthentication plugin for user management, add reset_session to the SessionsController#create action. Note that this removes any value from the session, _you have to transfer them to the new session_.
 
+bear in mind 1.记住，把…记在心里 2.考虑到 3.记住，记着，铭记不忘，把…记在心里
 Another countermeasure is to _save user-specific properties in the session_, verify them every time a request comes in, and deny access, if the information does not match. Such properties could be the remote IP address or the user agent (the web browser name), though the latter is less user-specific. When saving the IP address, you have to bear in mind that there are Internet service providers or large organizations that put their users behind proxies. _These might change over the course of a session_, so these users will not be able to use your application, or only in a limited way.
 
 ### Session Expiry
@@ -180,12 +219,15 @@ delete_all "updated_at < '#{time.ago.to_s(:db)}' OR
   created_at < '#{2.days.ago.to_s(:db)}'"
 ```
 
+forgery   ['fɔ:dʒəri] n. 1.(文件、签字、艺术品等的)假冒，伪造；伪造罪 2.伪造品，赝品 3.[古语、诗歌用语]捏造，虚构
 Cross-Site Request Forgery (CSRF)
 ---------------------------------
 
 This attack method works by including malicious code or a link in a page that accesses a web application that the user is believed to have authenticated. If the session for that web application has not timed out, an attacker may execute unauthorized commands.
 
 ![](images/csrf.png)
+
+controversial   [,kɔntrə'və:ʃəl] adj.1.争论的；引起争论的；有关争论的；有争议的 2.爱争论的，爱争辩的，喜欢抬杠的
 
 In the [session chapter](#sessions) you have learned that most Rails applications use cookie-based sessions. Either they store the session id in the cookie and have a server-side session hash, or the entire session hash is on the client-side. In either case the browser will automatically send along the cookie on every request to a domain, if it can find a cookie for that domain. The controversial point is, that it will also send the cookie, if the request comes from a site of a different domain. Let's start with an example:
 
@@ -197,6 +239,11 @@ In the [session chapter](#sessions) you have learned that most Rails application
 * Bob doesn't notice the attack - but a few days later he finds out that project number one is gone.
 
 It is important to notice that the actual crafted image or link doesn't necessarily have to be situated in the web application's domain, it can be anywhere - in a forum, blog post or email.
+
+sleeping giant 沉睡的巨人(指潜力未能充分发挥的大公司或组织)
+in stark contrast to 大相径庭 ; 鲜明对比
+In stark contrast 形成了鲜明的对比
+be in stark contrast 形成鲜明的对比
 
 CSRF appears very rarely in CVE (Common Vulnerabilities and Exposures) - less than 0.1% in 2006 - but it really is a 'sleeping giant' [Grossman]. This is in stark contrast to the results in many security contract works - _CSRF is an important security issue_.
 
@@ -213,9 +260,11 @@ The HTTP protocol basically provides two main types of requests - GET and POST (
 **Use POST if:**
 
 * The interaction is more _like an order_, or
+* perceive vt. 察觉，感觉；理解；认知 vi. 感到，感知；认识到
 * The interaction _changes the state_ of the resource in a way that the user would perceive (e.g., a subscription to a service), or
 * The user is _held accountable for the results_ of the interaction.
 
+barrier n. 障碍物，屏障；界线
 If your web application is RESTful, you might be used to additional HTTP verbs, such as PATCH, PUT or DELETE. Most of today's web browsers, however do not support them - only GET and POST. Rails uses a hidden `_method` field to handle this barrier.
 
 _POST requests can be sent automatically, too_. Here is an example for a link which displays www.harmless.com as destination in the browser's status bar. In fact it dynamically creates a new form that sends a POST request.
@@ -239,6 +288,7 @@ Or the attacker places the code into the onmouseover event handler of an image:
 
 There are many other possibilities, like using a `<script>` tag to make a cross-site request to a URL with a JSONP or JavaScript response. The response is executable code that the attacker can find a way to run, possibly extracting sensitive data. To protect against this data leakage, we disallow cross-site `<script>` tags. Only Ajax requests may have JavaScript responses since XmlHttpRequest is subject to the browser Same-Origin policy - meaning only your site can initiate the request.
 
+forged adj. 锻的；锻造的 v. 伪造（forge的过去式）；锻造（金属）
 To protect against all other forged requests, we introduce a _required security token_ that our site knows but other sites don't know. We include the security token in requests and verify it on the server. This is a one-liner in your application controller, and is the default for newly created rails applications:
 
 ```ruby
@@ -268,6 +318,8 @@ Another class of security vulnerabilities surrounds the use of redirection and f
 
 WARNING: _Redirection in a web application is an underestimated cracker tool: Not only can the attacker forward the user to a trap web site, they may also create a self-contained attack._
 
+phishing n. 网络钓鱼；网络欺诈（以虚假的身份和形象随机骗取个人帐号和密码等）
+unsuspicious adj. 无猜疑的；不怀疑的
 Whenever the user is allowed to pass (parts of) the URL for redirection, it is possibly vulnerable. The most obvious attack would be to redirect users to a fake web application which looks and feels exactly as the original one. This so-called phishing attack works by sending an unsuspicious link in an email to the users, injecting the link by XSS in the web application or putting the link into an external site. It is unsuspicious, because the link starts with the URL to the web application and the URL to the malicious site is hidden in the redirection parameter: http://www.example.com/site/redirect?to= www.attacker.com. Here is an example of a legacy action:
 
 ```ruby
@@ -294,6 +346,7 @@ This example is a Base64 encoded JavaScript which displays a simple message box.
 
 ### File Uploads
 
+asynchronously 异步
 NOTE: _Make sure file uploads don't overwrite important files, and process media files asynchronously._
 
 Many web applications allow users to upload files. _File names, which the user may choose (partly), should always be filtered_ as an attacker could use a malicious file name to overwrite any file on the server. If you store file uploads at /var/www/uploads, and the user enters a file name like "../../../etc/passwd", it may overwrite an important file. Of course, the Ruby interpreter would need the appropriate permissions to do so - one more reason to run web servers, database servers and other programs as a less privileged Unix user.
@@ -313,6 +366,8 @@ def sanitize_filename(filename)
 end
 ```
 
+synchronous adj. 同步的；同时的
+stall vt. 拖延；使停转；使陷于泥中
 A significant disadvantage of synchronous processing of file uploads (as the attachment_fu plugin may do with images), is its _vulnerability to denial-of-service attacks_. An attacker can synchronously start image file uploads from many computers which increases the server load and may eventually crash or stall the server.
 
 The solution to this is best to _process media files asynchronously_: Save the media file and schedule a processing request in the database. A second process will handle the processing of the file in the background.
@@ -335,6 +390,7 @@ Just as you have to filter file names for uploads, you have to do so for downloa
 send_file('/var/www/uploads/' + params[:filename])
 ```
 
+qc: ????????????????????????????????????????????????????????????????????????????????????????????
 Simply pass a file name like "../../../etc/passwd" to download the server's login information. A simple solution against this, is to _check that the requested file is in the expected directory_:
 
 ```ruby
@@ -347,11 +403,14 @@ send_file filename, disposition: 'inline'
 
 Another (additional) approach is to store the file names in the database and name the files on the disk after the ids in the database. This is also a good approach to avoid possible code in an uploaded file to be executed. The attachment_fu plugin does this in a similar way.
 
+intranet   ['intrənet] n.【计算机】内联网，内连网，内部网络
 Intranet and Admin Security
 ---------------------------
 
 Intranet and administration interfaces are popular attack targets, because they allow privileged access. Although this would require several extra-security measures, the opposite is the case in the real world.
 
+tailor-made adj. 特制的；量身定制
+recruitment n. 补充；征募新兵
 In 2007 there was the first tailor-made trojan which stole information from an Intranet, namely the "Monster for employers" web site of Monster.com, an online recruitment web application. Tailor-made Trojans are very rare, so far, and the risk is quite low, but it is certainly a possibility and an example of how the security of the client host is important, too. However, the highest threat to Intranet and Admin applications are XSS and CSRF. 
 
 **XSS** If your application re-displays malicious user input from the extranet, the application will be vulnerable to XSS. User names, comments, spam reports, order addresses are just a few uncommon examples, where there can be XSS.
@@ -366,15 +425,20 @@ A real-world example is a [router reconfiguration by CSRF](http://www.h-online.c
 
 Another example changed Google Adsense's e-mail address and password by. If the victim was logged into Google Adsense, the administration interface for Google advertisements campaigns, an attacker could change their credentials. 
 
+spam   [spæm] 【计算机】n.电子垃圾，(网上)垃圾函件 vt.向…发送垃圾函件
 Another popular attack is to spam your web application, your blog or forum to propagate malicious XSS. Of course, the attacker has to know the URL structure, but most Rails URLs are quite straightforward or they will be easy to find out, if it is an open-source application's admin interface. The attacker may even do 1,000 lucky guesses by just including malicious IMG-tags which try every possible combination.
 
 For _countermeasures against CSRF in administration interfaces and Intranet applications, refer to the countermeasures in the CSRF section_.
 
+precautions n. 防范；预防措施；预警（precaution的复数）
 ### Additional Precautions
 
 The common admin interface works like this: it's located at www.example.com/admin, may be accessed only if the admin flag is set in the User model, re-displays user input and allows the admin to delete/add/edit whatever data desired. Here are some thoughts about this:
 
 * It is very important to _think about the worst case_: What if someone really got hold of your cookies or user credentials. You could _introduce roles_ for the admin interface to limit the possibilities of the attacker. Or how about _special login credentials_ for the admin interface, other than the ones used for the public part of the application. Or a _special password for very serious actions_?
+
+bullet proof 防弹的;刀枪不入
+barrier n. 障碍物，屏障；界线 vt. 把…关入栅栏
 
 * Does the admin really have to access the interface from everywhere in the world? Think about _limiting the login to a bunch of source IP addresses_. Examine request.remote_ip to find out about the user's IP address. This is not bullet-proof, but a great barrier. Remember that there might be a proxy in use, though.
 
@@ -383,10 +447,12 @@ The common admin interface works like this: it's located at www.example.com/admi
 User Management
 ---------------
 
+precautions n. 防范；预防措施；预警（precaution的复数）
 NOTE: _Almost every web application has to deal with authorization and authentication. Instead of rolling your own, it is advisable to use common plug-ins. But keep them up-to-date, too. A few additional precautions can make your application even more secure._
 
 There are a number of authentication plug-ins for Rails available. Good ones, such as the popular [devise](https://github.com/plataformatec/devise) and [authlogic](https://github.com/binarylogic/authlogic), store only encrypted passwords, not plain-text passwords. In Rails 3.1 you can use the built-in `has_secure_password` method which has similar features.
 
+chances are that ...是可能的
 Every new user gets an activation code to activate their account when they get an e-mail with a link in it. After activating the account, the activation_code columns will be set to NULL in the database. If someone requested an URL like these, they would be logged in as the first activated user found in the database (and chances are that this is the administrator):
 
 ```
@@ -410,11 +476,36 @@ And thus it found the first user in the database, returned it and logged them in
 
 ### Brute-Forcing Accounts
 
+Fend vt. 谋生；保护；挡开；供养 vi. 照料；供养；力争
 NOTE: _Brute-force attacks on accounts are trial and error attacks on the login credentials. Fend them off with more generic error messages and possibly require to enter a CAPTCHA._
 
+a matter of a matter of 1. 大约；大概 2. …的问题；…的事情
 A list of user names for your web application may be misused to brute-force the corresponding passwords, because most people don't use sophisticated passwords. Most passwords are a combination of dictionary words and possibly numbers. So armed with a list of user names and a dictionary, an automatic program may find the correct password in a matter of minutes.
 
 Because of this, most web applications will display a generic error message "user name or password not correct", if one of these are not correct. If it said "the user name you entered has not been found", an attacker could automatically compile a list of user names.
+
+neglect   [ni'ɡlekt]
+vt.
+1.
+忽视，无视，轻视：
+His genius was neglected for several years.
+他的创造能力被忽视了好几年。
+2.
+不讲究，不顾：
+to neglect one's behaviour
+不拘小节
+3.
+疏忽，忽略，遗漏：
+He neglected to go to the meeting.
+他一时疏忽，忘记去开会。
+4.
+漏做(某事)：
+to neglect waking someone up
+忘了叫醒某人
+5.
+玩忽：
+He was dismissed for neglecting his work.
+他因玩忽职守而被炒了鱿鱼。
 
 However, what most web application designers neglect, are the forgot-password pages. These pages often admit that the entered user name or e-mail address has (not) been found. This allows an attacker to compile a list of user names and brute-force the accounts.
 
@@ -424,6 +515,7 @@ In order to mitigate such attacks, _display a generic error message on forgot-pa
 
 Many web applications make it easy to hijack user accounts. Why not be different and make it more difficult?.
 
+# 到此
 #### Passwords
 
 Think of a situation where an attacker has stolen a user's session cookie and thus may co-use the application. If it is easy to change the password, the attacker will hijack the account with a few clicks. Or if the change-password form is vulnerable to CSRF, the attacker will be able to change the victim's password by luring them to a web page where there is a crafted IMG-tag which does the CSRF. As a countermeasure, _make change-password forms safe against CSRF_, of course. And _require the user to enter the old password when changing it_.

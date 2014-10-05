@@ -1,4 +1,7 @@
 The Rails Command Line
+
+[[[view-1]]]
+
 ======================
 
 After reading this guide, you will know:
@@ -69,6 +72,7 @@ $ bin/rails server
 [2013-08-07 02:00:01] INFO  WEBrick::HTTPServer#start: pid=69680 port=3000
 ```
 
+whipped up 激起；鞭打
 With just three commands we whipped up a Rails server listening on port 3000. Go to your browser and open [http://localhost:3000](http://localhost:3000), you will see a basic Rails app running.
 
 INFO: You can also use the alias "s" to start the server: `rails s`.
@@ -418,6 +422,7 @@ and remove older compiled assets using `rake assets:clean`. The `assets:clean`
 task allows for rolling deploys that may still be linking to an old asset while
 the new assets are being built.
 
+clobber: 重写
 If you want to clear `public/assets` completely, you can use `rake assets:clobber`.
 
 ### `db`
@@ -428,6 +433,7 @@ More information about migrations can be found in the [Migrations](migrations.ht
 
 ### `doc`
 
+slim vt. 使…体重减轻；使…苗条
 The `doc:` namespace has the tools to generate documentation for your app, API documentation, guides. Documentation can also be stripped which is mainly useful for slimming your codebase, like if you're writing a Rails application for an embedded platform.
 
 * `rake doc:app` generates documentation for your application in `doc/app`.
@@ -499,6 +505,7 @@ spec/models/user_spec.rb:
 
 INFO: A good description of unit testing in Rails is given in [A Guide to Testing Rails Applications](testing.html)
 
+owe vt. 欠；感激；应给予；应该把……归功于
 Rails comes with a test suite called Minitest. Rails owes its stability to the use of tests. The tasks available in the `test:` namespace helps in running the different tests you will hopefully write.
 
 ### `tmp`
@@ -513,6 +520,7 @@ The `tmp:` namespaced tasks will help you clear and create the `Rails.root/tmp` 
 * `rake tmp:clear` clears all the three: cache, sessions and sockets.
 * `rake tmp:create` creates tmp directories for sessions, cache, sockets, and pids.
 
+Miscellaneous adj. 混杂的，各种各样的；多方面的，多才多艺的 n. 杂项
 ### Miscellaneous
 
 * `rake stats` is great for looking at statistics on your code, displaying things like KLOCs (thousands of lines of code) and your code to test ratio.
@@ -525,6 +533,7 @@ Custom rake tasks have a `.rake` extension and are placed in
 `Rails.root/lib/tasks`. You can create these custom rake tasks with the
 `bin/rails generate task` command.
 
+prerequisite n. 先决条件 adj. 首要必备的
 ```ruby
 desc "I am short, but comprehensive description for my cool task"
 task task_name: [:prerequisite_task, :another_task_we_depend_on] do

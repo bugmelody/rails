@@ -53,7 +53,7 @@ Active Record will perform queries on the database for you and is compatible wit
 
 Retrieving Objects from the Database
 ------------------------------------
-# 到此
+
 To retrieve objects from the database, Active Record provides several finder methods. Each finder method allows you to pass arguments into it to perform certain queries on your database without writing raw SQL.
 
 The methods are:
@@ -281,6 +281,7 @@ User.all.each do |user|
   NewsMailer.weekly(user).deliver_now
 end
 ```
+> impractical: adj. 不切实际的，不现实的；不能实行的
 
 But this approach becomes increasingly impractical as the table size increases, since `User.all.each` instructs Active Record to fetch _the entire table_ in a single pass, build a model object per row, and then keep the entire array of model objects in memory. Indeed, if we have a large number of records, the entire collection may exceed the amount of memory available.
 
@@ -338,6 +339,9 @@ Another example would be if you wanted multiple workers handling the same proces
 
 #### `find_in_batches`
 
+> invoices: n. [会计] 发票，单据（invoice的复数） v. 给…开发票；托运（invoice的第三人称单数）
+
+
 The `find_in_batches` method is similar to `find_each`, since both retrieve batches of records. The difference is that `find_in_batches` yields _batches_ to the block as an array of models, instead of individually. The following example will yield to the supplied block an array of up to 1000 invoices at a time, with the final block containing any remaining invoices:
 
 ```ruby
@@ -392,6 +396,9 @@ to this code:
 Client.where("orders_count = #{params[:orders]}")
 ```
 
+> malicious : adj. 恶意的；恶毒的；蓄意的；怀恨的
+
+
 because of argument safety. Putting the variable directly into the conditions string will pass the variable to the database **as-is**. This means that it will be an unescaped variable directly from a user who may have malicious intent. If you do this, you put your entire database at risk because once a user finds out they can exploit your database they can do just about anything to it. Never ever put your arguments directly inside the conditions string.
 
 TIP: For more information on the dangers of SQL injection, see the [Ruby on Rails Security Guide](security.html#sql-injection).
@@ -431,6 +438,8 @@ In the case of a belongs_to relationship, an association key can be used to spec
 Article.where(author: author)
 Author.joins(:articles).where(articles: { author: author })
 ```
+
+??? 这是什么意思?
 
 NOTE: The values cannot be symbols. For example, you cannot do `Client.where(status: :active)`.
 
@@ -686,6 +695,7 @@ Article.where(id: 10, trashed: false).unscope(where: :id)
 A relation which has used `unscope` will affect any relation it is
 merged in to:
 
+merge 是什么意思 ???
 ```ruby
 Article.order('id asc').merge(Article.unscope(:order))
 # SELECT "articles".* FROM "articles"
@@ -962,6 +972,7 @@ class Tag < ActiveRecord::Base
   belongs_to :article
 end
 ```
+为什么 belongs_to 对应的是单数, has_many 对应的是复数??
 
 Now all of the following will produce the expected join queries using `INNER JOIN`:
 
@@ -1052,6 +1063,9 @@ Eager Loading Associations
 Eager loading is the mechanism for loading the associated records of the objects returned by `Model.find` using as few queries as possible.
 
 **N + 1 queries problem**
+
+> postcode: 邮编
+
 
 Consider the following code, which finds 10 clients and prints their postcodes:
 
@@ -1464,6 +1478,13 @@ Client.connection.select_all("SELECT first_name, created_at FROM clients WHERE i
 
 ### `pluck`
 
+
+pluck:
+n. 勇气；内脏；快而猛的拉
+vt. 摘；拔；扯
+vi. 拉；拽；扯
+
+
 `pluck` can be used to query single or multiple columns from the underlying table of a model. It accepts a list of column names as argument and returns an array of values of the specified columns with the corresponding data type.
 
 ```ruby
@@ -1483,10 +1504,12 @@ Client.pluck(:id, :name)
 `pluck` makes it possible to replace code like:
 
 ```ruby
+# ??? 这个是什么意思 ???
 Client.select(:id).map { |c| c.id }
 # or
+# ??? 这个是什么意思 ???
 Client.select(:id).map(&:id)
-# or
+# ??? 这个是什么意思 ???
 Client.select(:id, :name).map { |c| [c.id, c.name] }
 ```
 
@@ -1510,6 +1533,7 @@ class Client < ActiveRecord::Base
   end
 end
 
+# ??? 这个是什么意思 ???
 Client.select(:name).map &:name
 # => ["I am David", "I am Jeremy", "I am Jose"]
 
@@ -1582,6 +1606,7 @@ Client.exists?
 
 The above returns `false` if the `clients` table is empty and `true` otherwise.
 
+any? 和 many? 是什么意思?
 You can also use `any?` and `many?` to check for existence on a model or relation.
 
 ```ruby
@@ -1604,6 +1629,11 @@ Article.first.categories.many?
 
 Calculations
 ------------
+
+preamble   [pri:'æmbl; 'pri:æ-]
+n.
+1.前言，序文，绪论，导言，开场白
+2.开端；预兆性事件；先兆；(事件的)前奏
 
 This section uses count as an example method in this preamble, but the options described apply to all sub-sections.
 
