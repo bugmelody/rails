@@ -1,4 +1,5 @@
 Active Record Associations
+[[[run-1]]]
 ==========================
 
 This guide covers the association features of Active Record.
@@ -40,6 +41,7 @@ end
 @customer.destroy
 ```
 
+revise   [ri'vaiz; 'ri:vaiz] vt. 修正；复习；校订vi. 修订；校订；复习功课n. 修订；校订
 With Active Record associations, we can streamline these - and other - operations by declaratively telling Rails that there is a connection between the two models. Here's the revised code for setting up customers and orders:
 
 ```ruby
@@ -92,6 +94,10 @@ end
 
 ![belongs_to Association Diagram](images/belongs_to.png)
 
+singular adj. 单数的；单一的；非凡的；异常的 n. 单数
+term n. 术语；学期；期限；条款
+pluralize   ['pluərəlaiz] vi. 兼职；成复数 vt. 使成复数；以复数表示
+infer vt. 推断；推论 vi. 推断；作出推论
 NOTE: `belongs_to` associations _must_ use the singular term. If you used the pluralized form in the above example for the `customer` association in the `Order` model, you would be told that there was an "uninitialized constant Order::Customers". This is because Rails automatically infers the class name from the association name. If the association name is wrongly pluralized, then the inferred class will be wrongly pluralized too.
 
 The corresponding migration might look like this:
@@ -115,6 +121,7 @@ end
 
 ### The `has_one` Association
 
+possess   [pə'zes] vt. 控制；使掌握；持有；迷住；拥有，具备
 A `has_one` association also sets up a one-to-one connection with another model, but with somewhat different semantics (and consequences). This association indicates that each instance of a model contains or possesses one instance of another model. For example, if each supplier in your application has only one account, you'd declare the supplier model like this:
 
 ```ruby
@@ -154,6 +161,7 @@ class Customer < ActiveRecord::Base
 end
 ```
 
+pluralize   ['pluərəlaiz] vi. 兼职；成复数vt. 使成复数；以复数表示
 NOTE: The name of the other model is pluralized when declaring a `has_many` association.
 
 ![has_many Association Diagram](images/has_many.png)
@@ -179,6 +187,8 @@ end
 
 ### The `has_many :through` Association
 
+physicians 内科医生（physician的复数）
+patients n. [医] 病人（patient的复数形式）
 A `has_many :through` association is often used to set up a many-to-many connection with another model. This association indicates that the declaring model can be matched with zero or more instances of another model by proceeding _through_ a third model. For example, consider a medical practice where patients make appointments to see physicians. The relevant association declarations could look like this:
 
 ```ruby
@@ -311,6 +321,7 @@ end
 
 ### The `has_and_belongs_to_many` Association
 
+assemblies and parts 总成和部件
 A `has_and_belongs_to_many` association creates a direct many-to-many connection with another model, with no intervening model. For example, if your application includes assemblies and parts, with each assembly having many parts and each part appearing in many assemblies, you could declare the models this way:
 
 ```ruby
@@ -420,6 +431,7 @@ class Part < ActiveRecord::Base
 end
 ```
 
+independent adj. 独立的；单独的
 The simplest rule of thumb is that you should set up a `has_many :through` relationship if you need to work with the relationship model as an independent entity. If you don't need to do anything with the relationship model, it may be simpler to set up a `has_and_belongs_to_many` relationship (though you'll need to remember to create the joining table in the database).
 
 You should use `has_many :through` if you need validations, callbacks, or extra attributes on the join model.
@@ -481,6 +493,7 @@ end
 
 ### Self Joins
 
+subordinate   [sə'bɔ:dinət; -neit; sə'bɔ:dineit] 下级 属下
 In designing a data model, you will sometimes find a model that should have a relation to itself. For example, you may want to store all employees in a single database model, but be able to trace relationships such as between manager and subordinates. This situation can be modeled with self-joining associations:
 
 ```ruby
@@ -555,6 +568,7 @@ class Order < ActiveRecord::Base
 end
 ```
 
+back up  v. 支持，援助；（资料）备份；倒退；裱
 This declaration needs to be backed up by the proper foreign key declaration on the orders table:
 
 ```ruby
@@ -575,6 +589,8 @@ If you create an association some time after you build the underlying model, you
 
 #### Creating Join Tables for `has_and_belongs_to_many` Associations
 
+outranks vt. 地位高于，级别高于；居…之上位
+lexical adj. 词汇的；[语] 词典的；词典编纂的
 If you create a `has_and_belongs_to_many` association, you need to explicitly create the joining table. Unless the name of the join table is explicitly specified by using the `:join_table` option, Active Record creates the name by using the lexical order of the class names. So a join between customer and order models will give the default join table name of "customers_orders" because "c" outranks "o" in lexical ordering.
 
 WARNING: The precedence between model names is calculated using the `<` operator for `String`. This means that if the strings are of different lengths, and the strings are equal when compared up to the shortest length, then the longer string is considered of higher lexical precedence than the shorter one. For example, one would expect the tables "paper_boxes" and "papers" to generate a join table name of "papers_paper_boxes" because of the length of the name "paper_boxes", but it in fact generates a join table name of "paper_boxes_papers" (because the underscore '_' is lexicographically _less_ than 's' in common encodings).
@@ -591,6 +607,7 @@ class Part < ActiveRecord::Base
 end
 ```
 
+backed up v. 支持，援助；（资料）备份；倒退；裱
 These need to be backed up by a migration to create the `assemblies_parts` table. This table should be created without a primary key:
 
 ```ruby
@@ -679,6 +696,7 @@ class Order < ActiveRecord::Base
 end
 ```
 
+out of sync 不同步
 By default, Active Record doesn't know about the connection between these associations. This can lead to two copies of an object getting out of sync:
 
 ```ruby
@@ -689,6 +707,7 @@ c.first_name = 'Manny'
 c.first_name == o.customer.first_name # => false
 ```
 
+inform vt. 通知；告诉；报告
 This happens because c and o.customer are two different in-memory representations of the same data, and neither one is automatically refreshed from changes to the other. Active Record provides the `:inverse_of` option so that you can inform it of these relations:
 
 ```ruby
@@ -718,6 +737,7 @@ There are a few limitations to `inverse_of` support:
 * They do not work with `:as` associations.
 * For `belongs_to` associations, `has_many` inverse associations are ignored.
 
+heuristic   [hjuə'ristik] adj.1.启发的，启发式的2.帮助发现的；引起兴趣促使研究的，3.试探的，探索的4.【计算机、数学】探试的
 Every association will attempt to automatically find the inverse association
 and set the `:inverse_of` option heuristically (based on the association name).
 Most associations with standard names will be supported. However, associations
@@ -780,6 +800,7 @@ If the associated object has already been retrieved from the database for this o
 
 ##### `association=(associate)`
 
+Behind the scenes 在幕后；秘密地
 The `association=` method assigns an associated object to this object. Behind the scenes, this means extracting the primary key from the associate object and setting this object's foreign key to the same value.
 
 ```ruby
@@ -808,9 +829,9 @@ The `create_association` method returns a new object of the associated type. Thi
 
 Does the same as `create_association` above, but raises `ActiveRecord::RecordInvalid` if the record is invalid.
 
-
 #### Options for `belongs_to`
 
+intelligent adj. 智能的；聪明的；理解力强的
 While Rails uses intelligent defaults that will work well in most situations, there may be times when you want to customize the behavior of the `belongs_to` association reference. Such customizations can easily be accomplished by passing options and scope blocks when you create the association. For example, this association uses two such options:
 
 ```ruby
@@ -838,6 +859,7 @@ If you set the `:autosave` option to `true`, Rails will save any loaded members 
 
 ##### `:class_name`
 
+patron   ['peitrən] n. 赞助人；保护人；主顾
 If the name of the other model cannot be derived from the association name, you can use the `:class_name` option to supply the model name. For example, if an order belongs to a customer, but the actual name of the model containing customers is `Patron`, you'd set things up this way:
 
 ```ruby
@@ -883,6 +905,7 @@ class Customer < ActiveRecord::Base
 end
 ```
 
+??? 这句话是什么意思 ???
 Counter cache columns are added to the containing model's list of read-only attributes through `attr_readonly`.
 
 ##### `:dependent`
@@ -910,6 +933,7 @@ TIP: In any case, Rails will not create foreign key columns for you. You need to
 
 ##### `:inverse_of`
 
+?? 指定了 :inverse_of 之后有什么优势 ?
 The `:inverse_of` option specifies the name of the `has_many` or `has_one` association that is the inverse of this association. Does not work in combination with the `:polymorphic` options.
 
 ```ruby
@@ -952,6 +976,7 @@ end
 
 If you set the `:validate` option to `true`, then associated objects will be validated whenever you save this object. By default, this is `false`: associated objects will not be validated when this object is saved.
 
+# 到此
 #### Scopes for `belongs_to`
 
 There may be times when you wish to customize the query used by `belongs_to`. Such customizations can be achieved via a scope block. For example:
